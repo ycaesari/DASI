@@ -1,0 +1,120 @@
+---
+title: "DASI Project - Religion and Liberalism"
+date: "Oct 19th, 2014"
+output:
+  html_document:
+    theme: cerulean
+---
+
+<!-- For more info on RMarkdown see http://rmarkdown.rstudio.com/ -->
+
+<!-- Enter the code required to load your data in the space below. The data will be loaded but the line of code won't show up in your write up (echo=FALSE) in order to save space-->
+```{r echo=FALSE}
+load(url("http://bit.ly/dasi_gss_data"));
+source("http://bit.ly/dasi_inference")
+```
+
+<!-- In the remainder of the document, add R code chunks as needed -->
+
+### Introduction:
+
+Throughout my life I was fascinated by religions, so when I saw the GSS and its data, I jumped on the opportunity to make my research on this subject. Religious liberalism is a form of religious inquiry which is critical, rationalistic or humanistic in it approach. Attempts to show a link between religious liberal and political liberal adherences have proven inconclusive (http://en.wikipedia.org/wiki/Religious_liberalism). This research will try to analyze an aspect of this subject and find out if there is a relationship between one's religious preference and self perception as being a liberal. 
+
+### Data:
+
+#### Data Collection
+The research is based on the GSS (General Social Survey), which is is a sociological survey used to collect data on demographic characteristics and attitudes of residents of the United States. The survey is conducted face-to-face with an in-person interview by the National Opinion Research Center at the University of Chicago, of adults (18+) in randomly selected households. The survey was conducted in almost every year from 1972 to 1994, and since then, it has been conducted every other year. As of 2010, 28 national samples with 55,087 respondents and 5,417 variables had been collected. The data collected about this survey includes both demographic information and respondents' opinions on matters ranging from government spending to the state of race relations to the existence and nature of God. More information about the data can be found at the appendix at the end of this document.
+
+#### Cases
+The case (unit of observation) in the GSS is a single respondent, which is asked various questions in various subjects, related to the social survey.
+
+#### Variables
+The first variable that I will be using is - **POLVIEWS** - THINK OF SELF AS LIBERAL OR CONSERVATIVE (type: ordinal - categorical with 7 levels)
+
+**The question that the respondent was asked:** We hear a lot of talk these days about liberals and conservatives. I'm going to show you a seven-point scale on which the political views that people might hold are arranged from extremely liberal - point 1 - to extremely conservative - point. Where would you place yourself on this scale? (1) EXTREMELY LIBERAL, (2) LIBERAL, (3) SLIGHTLY LIBERAL, (4) MODERATE, (5) SLGHTLY CONSERVATIVE, (6) CONSERVATIVE, (7) EXTRMLY CONSERVATIVE
+
+The other variable that I will be using is **RELIG** - RESPONDENT RELIGIOUS PREFERENCE (type: categorical)
+
+**The question that the respondent was asked:** What is your religious preference? Is it Protestant, Catholic, Jewish, some other religion, or no religion? (1) PROTESTANT, (2) CATHOLIC, (3) JEWISH, (4) NONE, (5) OTHER, (6) BUDDHISM, (7) HINDUISM, (8) OTHER EASTERN, (9) MOSLEM/ISLAM, (10) ORTHODOX-CHRISTIAN, (11) CHRISTIAN, (12) NATIVE AMERICAN, (13) INTER-NONDENOMINATIONAL
+
+#### Study
+The type of this study is observational, as the data was collected in a way that did not directly interfere with how the data arise. We merely observe. The study uses random sampling. I base that on my understanding from the documentation in http://www3.norc.org/GSS+Website/Documentation/, appendix A - sampling design and weighting, which describes in more detail how the survey was conducted.
+
+#### Scope of inference - generalizability
+The population of interest is the entire US population. Based on my understanding, the study used random sampling. See the documentation in http://www3.norc.org/GSS+Website/Documentation/, appendix A - sampling design and weighting. So the results can be used to make correlation statements and be generalized to the population at large. 
+
+A source of bias that might prevent generalization is the political situation and/or religion trends on the year(s) when the survey took place. The gss data set contains information from 1972-2012. We may want to try analyzing the data broken by years. In this reasearch we will not do so. I suggest, though, to perform an analysis broken by years in the conclusion summarizing this research. 
+
+#### Scope of inference - causality
+As this is an observational study and not an experimental one, we can only establish an association. We cannot establish casual connections.
+
+### Exploratory data analysis:
+
+Below is a table counting the respondents based on their political view and a barplot - 
+```{r echo=FALSE}
+table(gss$polviews)
+barplot(table(gss$polviews), las = 2, cex.names = 0.7)
+```
+
+Below is a table counting the respondents based on their religion and a barplot - 
+```{r echo=FALSE}
+table(gss$relig)
+barplot(table(gss$relig), las = 2, cex.names = 0.7)
+```
+
+Below is a quick breakdown comparing religion and polviews - 
+
+```{r echo=FALSE}
+polviews_relig <- xtabs(~ polviews + relig, gss)
+polviews_relig
+relig_polviews <- xtabs(~ relig + polviews, gss)
+mosaicplot(relig_polviews, color = TRUE, las=2)
+```
+
+Quick look at the table shows that the data is quite spread, centered toward the Moderate. There are religions in which we can see bias to one side or another, but yet we need to investigate that further. definitely there is more work to be done.
+
+### Inference:
+
+#### Hypotheses
+Our null hypotheses (H~0~) would be that nothing is going on. Religious preference and perception of being a liberal are independent. The alternative hypotheses (H~A~) would be that indeed something is going on. Religious preference and perception of being liberal are dependent.
+
+#### Method chosen and Conditions
+We would like to perform the Chi-square test of independence, because we want to compare two categorical variables with more than 2 levels each. let's check the conditions for this test.
+Independence: We can assume that the GSS observants are independent. We know they were chosen randomly and surely 55,087 people are less then 10% of the population. We know that each case contributes to one cell in the table (meaning, each respondent belong to a single (religion, political view) pair). So we are ok for all of the independence conditions.
+Sample size: As for the having at least 5 cases in each particular scenario (cell), looking at the table above, we can see that only the following religions - Protestants/Catholic/Jewish/Christian/Other/None conform to that while other religions, like Buddhism/Islam/Orthodox-Christian do not. Therfore, we will perform a simulated Chi-square test.
+
+#### Performing Inference
+We will use the inference() function using the simulation method - **inference(y = gss\$polviews, x = gss\$relig, est = "proportion", type = "ht", method = "simulation", alternative = "greater", sum_stats = FALSE, eda_plot = FALSE)** - Below is the function's output. I removed the summary statistics and the plot as they appear above.
+
+```{r echo=FALSE}
+inference(y = gss$polviews, x = gss$relig, est = "proportion", type = "ht", method = "simulation", alternative = "greater", sum_stats = FALSE, eda_plot = FALSE)
+```
+
+#### Results interpretation
+We can see that the in the simulation test for the original gss set, we have a very low p-value (0.00009999), so we reject the null hypothesis (H~0~) in favor of the alternative (H~A~) and we can conclude that indeed something is going on, there is a relationship between one's religious preference and self perception as being a liberal. Note that other than the Chi-square testing method, no other methods were applicable so we have nothing to compare to, as requested in the project.
+
+### Conclusion:
+This small research just intrigued me more :-) within the limit of 7 pages I am a bit bound. There are people who has prejudice thoughts and stigmas over religious people, thinking that as more as one is religious, he is less open to change (This is not my opinion, I'm just stating an axiom). The research shows there is a connection between religion and liberality, at least as perceived by oneself (It would be interesting, yet more difficult to try estimating how liberal one is objectively). As the research uses random sampling, it can be generelized to the population at large (see the discussion at the beginning of this document on generalizability). However, as discussed, we cannot established casual connection. 
+
+The research does not tell us if the more religious one is, the less/more liberal he perceives himself. It also does not tell us anything per case (combination of religion preference and self perception of being liberal). Trying to find correlation between the level of being religious and the level of being liberal and doing that also within a scope of a single religion would be interesting as well. Also, as suggested before, we may want to break the research by years, to see if there is some trend.
+
+### Reference
+Here is a reference to the used data -
+
+Smith, Tom W., Michael Hout, and Peter V. Marsden. General Social Survey, 1972-2012 [Cumulative File]. ICPSR34802-v1. Storrs, CT: Roper Center for Public Opinion Research, University of Connecticut /Ann Arbor, MI: Inter-university Consortium for Political and Social Research [distributors], 2013-09-11. doi:10.3886/ICPSR34802.v1 Persistent URL: http://doi.org/10.3886/ICPSR34802.v1
+
+Using the General Social Survey Cumulative File, 1972-2012 Coursera Extract - https://d396qusza40orc.cloudfront.net/statistics%2Fproject%2Fgss1.html  
+
+Data can be downloaded from http://d396qusza40orc.cloudfront.net/statistics/project/gss.Rdata
+
+Here is a link to the data I used - http://bit.ly/dasi_gss_data which is provided by Coursera, and the codebook - https://d396qusza40orc.cloudfront.net/statistics%2Fproject%2Fgss1.html.
+
+The RMarkdown code creating this HTML can be found at - https://github.com/ycaesari/DASI
+
+### Appendix:
+Here is an extract of the data, taking only the columns I used: relig and polviews. Note that there are columns with NA, but they are ignored in the research.
+```{r echo=FALSE}
+gss[3150:3200, c("relig","polviews")]
+```
+
+**Thanks for evaluating my project!**
